@@ -1,0 +1,30 @@
+{
+  "lastChangelogVersion": "0.78.1",
+  "defaultProvider": "github-copilot",
+  "defaultModel": "gpt-5.3-codex",
+  "enabledModels": [
+    "github-copilot/gpt-5.3-codex",
+    "llama.cpp/Qwen3.6-27B-UD-Q4_K_XL",
+    "llama.cpp/gemma-4-31B-it-UD-Q4_K_XL",
+    "llama.cpp/gemma-4-E4B-it-UD-Q4_K_XL",
+    "llama.cpp/Qwen3.6-35B-A3B-UD-Q4_K_XL",
+    "llama.cpp/gemma-4-26B-A4B-it-UD-Q4_K_XL",
+    "github-copilot/gpt-5.4-mini"
+  ],
+  "extensions": [
+    "extensions/permission-gate.ts",
+    "extensions/model-provider-guard.ts",
+    "extensions/websearch-tool.ts",
+    "extensions/git-checkpoint-tree.ts",
+    "extensions/mode-cycle.ts"
+  ],
+  "packages": [
+    "npm:pi-subagents",
+    "npm:@plannotator/pi-extension",
+    "npm:pi-hermes-memory",
+    "npm:@juicesharp/rpiv-web-tools",
+    "npm:pi-perplexity"
+  ],
+  "enableSkillCommands": true,
+  "defaultThinkingLevel": "low"
+}

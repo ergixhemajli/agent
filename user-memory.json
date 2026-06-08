@@ -1,0 +1,40 @@
+{
+  "user_preferences": {
+    "neovim_terminal_mode": {
+      "esc_exits_terminal_mode": true,
+      "ctrl_c_interrupts_pi": true,
+      "esc_should_not_stop_model": true
+    },
+    "context_size_management": {
+      "user_managed_via_llama_aliases": true,
+      "pi_should_not_override_context_size": true,
+      "config_location": "~/.llama/llama-runtime.env (LLM_DEFAULT_CTX=196608)"
+    }
+  },
+  "failures": [
+    {
+      "issue": "keymaps.lua file corruption",
+      "what_tried": "Edit operations on lua/core/keymaps.lua",
+      "why_it_failed": "Stray 'EOF' and 'echo done' text appended to end of file, causing E5113 Lua syntax error",
+      "correction": "Clean up trailing garbage after file edits, verify file ends cleanly",
+      "type": "tool-quirk"
+    },
+    {
+      "issue": "Escape key behavior conflict",
+      "what_tried": "Simple string keymap for <Esc> in terminal mode",
+      "why_it_failed": "Escape was either interrupting the model or showing session tree on double-press",
+      "correction": "Use function-based keymap: keymap('t', '<Esc>', function() vim.api.nvim_input('<C-\\><C-n>') end)",
+      "type": "correction"
+    }
+  ],
+  "conventions": {
+    "neovim_structure": "lua/core/ for core options/keymaps, lua/plugins/ for plugin configs, ftplugin/ for filetype-specific",
+    "llama_setup": "Local LLM via llama.cpp, managed through llama-aliases.sh + llama-runtime.env, NOT through pi settings"
+  },
+  "user_context": {
+    "runs_local_llm": true,
+    "uses_neovim_as_primary_editor": true,
+    "uses_pi_as_coding_agent": true,
+    "llama_default_ctx": 196608
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "failures": [
+    {
+      "id": "keymaps-file-corruption",
+      "what_tried": "File edits on lua/core/keymaps.lua via bash/cat/heredoc",
+      "why_it_failed": "Stray 'EOF' and 'echo done' appended to file, causing E5113 Lua syntax error on load",
+      "error": "E5113: Lua chunk: .../lua/core/keymaps.lua:30: '=' expected near 'echo'",
+      "correction": "After file writes, verify file ends cleanly without trailing shell artifacts",
+      "type": "tool-quirk"
+    },
+    {
+      "id": "escape-key-conflict",
+      "what_tried": "Plain string keymap: keymap('t', '<Esc>', '<C-\\\\><C-n>')",
+      "why_it_failed": "Esc still reached pi terminal — either interrupted model or showed session tree on double-press",
+      "correction": "Use function-based keymap that explicitly calls vim.api.nvim_input()",
+      "type": "correction"
+    }
+  ]
+}

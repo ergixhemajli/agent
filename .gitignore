@@ -1,0 +1,18 @@
+# Secrets / credentials
+auth.json
+
+# Sessions and ephemeral runtime state
+sessions/
+
+# Memory stores (often noisy and machine-specific)
+local-memory/
+memories/
+pi-hermes-memory/
+projects-memory/
+
+# Installed packages/vendor cache
+npm/
+
+# Logs / temp
+*.log
+.DS_Store
