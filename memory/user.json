@@ -1,0 +1,24 @@
+{
+  "preferences": [
+    {
+      "id": "direct-refactor-preference",
+      "preference": "Prefers direct code changes over adding new wrapper functions or layers",
+      "context": "User said: 'make the changes directly in the existing code. prefer to make the changes to the actual code instead of adding function on top of function to fix the issue'"
+    },
+    {
+      "id": "prompt-review-habit",
+      "preference": "Expects prompts to be reviewed and improved during refactoring passes",
+      "context": "User said: 'do a pass over the prompts and see if there is anythign you can do to improve it'"
+    },
+    {
+      "id": "incremental-validation",
+      "preference": "Wants continuous validation — user provides feedback after each round of changes, expects iterative improvement",
+      "context": "User consistently provides detailed feedback on graph quality after each import run"
+    },
+    {
+      "id": "cleanup-as-you-go",
+      "preference": "Prefers cleanup to happen as changes are made, not as a separate step",
+      "context": "User said: 'go ahead - clean up underway as you go'"
+    }
+  ]
+}

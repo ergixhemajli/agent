@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "0.78.1",
-  "defaultProvider": "github-copilot",
-  "defaultModel": "gpt-5.3-codex",
+  "lastChangelogVersion": "0.79.0",
+  "defaultProvider": "llama.cpp",
+  "defaultModel": "Qwen3.6-35B-A3B-UD-Q4_K_XL",
   "enabledModels": [
     "github-copilot/gpt-5.3-codex",
     "llama.cpp/Qwen3.6-27B-UD-Q4_K_XL",
@@ -20,11 +20,14 @@
   ],
   "packages": [
     "npm:pi-subagents",
-    "npm:@plannotator/pi-extension",
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": []
+    },
     "npm:pi-hermes-memory",
     "npm:@juicesharp/rpiv-web-tools",
     "npm:pi-perplexity"
   ],
   "enableSkillCommands": true,
-  "defaultThinkingLevel": "low"
+  "defaultThinkingLevel": "medium"
 }

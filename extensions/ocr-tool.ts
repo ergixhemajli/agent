@@ -58,13 +58,12 @@ export default function (pi: ExtensionAPI) {
 
         const text = stdout.trim();
         if (!text) {
-          // No OCR text — try vision API as fallback
           return {
             content: [
               {
                 type: "text",
                 text: "Tesseract found no text (likely a visual diagram). " +
-                  "Try vision API: set VISION_API_KEY and use vision_image tool.",
+                  "Use vision_image tool to analyze this image with an AI vision model.",
               },
             ],
           };
@@ -96,16 +95,16 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
-  // Vision tool — uses OpenAI-compatible API to analyze any image
-  // Set VISION_API_KEY and VISION_BASE_URL (or VISION_MODEL) in env
-  // Falls back to OpenAI defaults if not set
+  // Vision tool — sends image to a vision API for analysis
+  // Supports: local Ollama (default), OpenAI, Anthropic Claude, Google Gemini
+  // Set VISION_API_KEY and optionally VISION_PROVIDER in env
   pi.registerTool({
     name: "vision_image",
     label: "Vision Image",
     description:
-      "Analyze images with a vision model (GPT-4o, Claude, etc.). " +
-      "Returns detailed descriptions of diagrams, UI mockups, flowcharts, " +
-      "documents, or any visual content. Pass a local file path.",
+      "Analyze images with a vision model. Returns detailed descriptions " +
+      "of diagrams, UI mockups, flowcharts, documents, or any visual content. " +
+      "Pass a local file path. Use local (Ollama) by default.",
     promptSnippet: "Analyze diagrams and images with vision model",
     promptGuidelines: [
       "Use vision_image to analyze diagrams, architecture diagrams, UI mockups, and screenshots.",
@@ -115,137 +114,280 @@ export default function (pi: ExtensionAPI) {
       path: Type.String({ description: "File path to the image to analyze" }),
       prompt: Type.Optional(
         Type.String({
-          default: "Describe everything in this image in detail, including structure, relationships, and any text.",
+          default: "Describe everything in this image in detail, including all text, folder names, file names, numbers, and structural relationships. Return a clean text outline.",
           description: "Question or instruction about the image.",
         })
+      ),
+      provider: Type.Optional(
+        Type.Enum({
+          local: "Local Ollama (Qwen3.6-35B)",
+          openai: "OpenAI (gpt-4o)",
+          anthropic: "Anthropic Claude",
+          google: "Google Gemini",
+        }),
+        { description: "Vision provider. Default is local." }
       ),
     }),
     async execute(_toolCallId, params, signal) {
       const apiKey = getEnv("VISION_API_KEY") || "";
-      const baseUrl = getEnv("VISION_BASE_URL") || "https://api.openai.com/v1";
-      const model = getEnv("VISION_MODEL") || "gpt-4o";
-
-      if (!apiKey) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Vision API requires VISION_API_KEY env var.\n\n` +
-                `Set one of:\n` +
-                `  export VISION_API_KEY=<your-key>\n` +
-                `  export VISION_BASE_URL=https://api.openai.com/v1 (default)\n` +
-                `  export VISION_MODEL=gpt-4o (default)\n\n` +
-                `OpenAI, Anthropic (via proxy), or any OpenAI-compatible vision API works.`,
-            },
-          ],
-        };
-      }
-
+      const providerOverride = params.provider;
       const imageBase64 = base64FromFile(params.path);
 
-      let url: string;
-      let body: any;
-
-      if (model.includes("claude")) {
-        // Anthropic Claude format
-        url = baseUrl.replace(/\/v1$/, "") + "/v1/messages";
-        body = {
-          model,
-          max_tokens: 4096,
-          system: "You are a helpful assistant that analyzes images. " +
-            "Describe diagrams, structures, relationships, and text in detail.",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: params.prompt || "Describe everything in this image.",
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/png;base64,${imageBase64}`,
-                    detail: "high",
-                  },
-                },
-              ],
-            },
-          ],
-        };
-      } else {
-        // OpenAI-compatible format (GPT-4o, Gemini, etc.)
-        url = baseUrl + "/chat/completions";
-        body = {
-          model,
-          max_tokens: 4096,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: params.prompt || "Describe everything in this image in detail.",
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/png;base64,${imageBase64}`,
-                  },
-                },
-              ],
-            },
-          ],
-        };
+      let provider = providerOverride;
+      if (!provider) {
+        provider = apiKey ? "openai" : "local";
       }
 
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify(body),
-          signal,
-        });
+      // Local Ollama
+      if (provider === "local") {
+        try {
+          const response = await fetch("http://127.0.0.1:11434/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer ollama",
+            },
+            body: JSON.stringify({
+              model: "gemma-4-26B-A4B-it-UD-Q4_K_XL",
+              max_tokens: 4096,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: params.prompt || "Describe everything in this image in detail, including all text, folder names, file names, numbers, and structural relationships. Return a clean text outline.",
+                    },
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: `data:image/png;base64,${imageBase64}`,
+                        detail: "high",
+                      },
+                    },
+                  ],
+                },
+              ],
+              stream: false,
+            }),
+            signal,
+          });
 
-        if (!response.ok) {
-          const errText = await response.text();
+          if (!response.ok) {
+            const errText = await response.text();
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Ollama error (${response.status}): ${errText}`,
+                },
+              ],
+              isError: true,
+            };
+          }
+
+          const result = await response.json();
+          const text = result.choices?.[0]?.message?.content ?? "No response";
           return {
             content: [
               {
                 type: "text",
-                text: `Vision API error (${response.status}): ${errText}`,
+                text: `=== Vision (Local gemma-4-26B) ===\n\n${text}\n\n=== End ===`,
+              },
+            ],
+            details: { model: "gemma-4-26B-A4B" },
+          };
+        } catch (e: any) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Local vision error: ${e.message}. Is Ollama running?`,
               },
             ],
             isError: true,
           };
         }
-
-        const result = await response.json();
-        const text = result.choices?.[0]?.message?.content ?? "No response";
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `=== Vision Analysis ===\n\n${text}\n\n=== End ===`,
-            },
-          ],
-          details: { model, tokens: result.usage?.total_tokens },
-        };
-      } catch (e: any) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Vision API error: ${e.message}`,
-            },
-          ],
-          isError: true,
-        };
       }
+
+      // OpenAI
+      if (provider === "openai") {
+        if (!apiKey) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `OpenAI vision requires VISION_API_KEY.\nSet: export VISION_API_KEY=sk-...`,
+              },
+            ],
+          };
+        }
+        try {
+          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-4o",
+              max_tokens: 4096,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: params.prompt || "Describe everything in this image in detail.",
+                    },
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: `data:image/png;base64,${imageBase64}`,
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+            signal,
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            return {
+              content: [{ type: "text", text: `OpenAI error (${response.status}): ${errText}` }],
+              isError: true,
+            };
+          }
+
+          const result = await response.json();
+          const text = result.choices?.[0]?.message?.content ?? "No response";
+          return {
+            content: [{ type: "text", text: `=== Vision (GPT-4o) ===\n\n${text}\n\n=== End ===` }],
+            details: { model: "gpt-4o" },
+          };
+        } catch (e: any) {
+          return {
+            content: [{ type: "text", text: `OpenAI error: ${e.message}` }],
+            isError: true,
+          };
+        }
+      }
+
+      // Anthropic
+      if (provider === "anthropic") {
+        if (!apiKey) {
+          return { content: [{ type: "text", text: `Anthropic requires VISION_API_KEY.` }] };
+        }
+        try {
+          const response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 4096,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: params.prompt || "Describe everything in this image.",
+                    },
+                    {
+                      type: "image",
+                      source: {
+                        type: "base64",
+                        media_type: "image/png",
+                        data: imageBase64,
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+            signal,
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            return {
+              content: [{ type: "text", text: `Anthropic error (${response.status}): ${errText}` }],
+              isError: true,
+            };
+          }
+
+          const result = await response.json();
+          const text = result.content?.find((c: any) => c.type === "text")?.text ?? "No response";
+          return {
+            content: [{ type: "text", text: `=== Vision (Claude) ===\n\n${text}\n\n=== End ===` }],
+            details: { model: "claude-sonnet-4" },
+          };
+        } catch (e: any) {
+          return { content: [{ type: "text", text: `Anthropic error: ${e.message}` }], isError: true };
+        }
+      }
+
+      // Google Gemini
+      if (provider === "google") {
+        if (!apiKey) {
+          return { content: [{ type: "text", text: `Google Gemini requires VISION_API_KEY.` }] };
+        }
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [
+                      {
+                        text: params.prompt || "Describe everything in this image.",
+                      },
+                      {
+                        inline_data: {
+                          mime_type: "image/png",
+                          data: imageBase64,
+                        },
+                      },
+                    ],
+                  },
+                ],
+              }),
+              signal,
+            }
+          );
+
+          if (!response.ok) {
+            const errText = await response.text();
+            return {
+              content: [{ type: "text", text: `Google error (${response.status}): ${errText}` }],
+              isError: true,
+            };
+          }
+
+          const result = await response.json();
+          const text = result.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response";
+          return {
+            content: [{ type: "text", text: `=== Vision (Gemini) ===\n\n${text}\n\n=== End ===` }],
+            details: { model: "gemini-2.0-flash" },
+          };
+        } catch (e: any) {
+          return { content: [{ type: "text", text: `Google error: ${e.message}` }], isError: true };
+        }
+      }
+
+      return {
+        content: [{ type: "text", text: `Unknown provider: ${provider}` }],
+        isError: true,
+      };
     },
   });
 }

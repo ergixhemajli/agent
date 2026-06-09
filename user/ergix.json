@@ -1,0 +1,11 @@
+{
+  "name": "ergix",
+  "editor": "neovim",
+  "config_path": "~/.config/nvim/",
+  "primary_tool": "pi (AI coding agent)",
+  "config_style": "modular lua with ftplugin/ and keymaps/ directories",
+  "keymap_convention": "keymap({modes}, key, fn, {desc=...})",
+  "neovim_module_path": "lua/plugins/<name>.lua",
+  "prefers_tab_completion": true,
+  "prefers_auto_attach": "visual selection should auto-attach to prompt at send time without showing in the input field"
+}
