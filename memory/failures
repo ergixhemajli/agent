@@ -1,0 +1,5 @@
+[convention] llama-aliases.sh: Use printf with fixed-width columns for table formatting. Header/separator/data must all use the same format specifiers — mismatched widths cause misalignment.
+
+[tool-quirk] macOS locale: `ps aux` output uses decimal commas (19,1) not dots (19.1). Use `LC_NUMERIC=C` or pipe through `tr ',' '.'` to normalize.
+
+[insight] When adding optional flags to shell functions that are called from a router (case statement in llama-aliases.sh), ensure the flag parsing is done at the top of the function before any output, and that the function doesn't early-return before processing flags.

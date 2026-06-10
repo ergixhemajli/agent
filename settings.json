@@ -1,15 +1,16 @@
 {
-  "lastChangelogVersion": "0.79.0",
-  "defaultProvider": "llama.cpp",
-  "defaultModel": "Qwen3.6-35B-A3B-UD-Q4_K_XL",
+  "lastChangelogVersion": "0.79.1",
+  "defaultProvider": "github-copilot",
+  "defaultModel": "gpt-5.3-codex",
   "enabledModels": [
     "github-copilot/gpt-5.3-codex",
     "llama.cpp/Qwen3.6-27B-UD-Q4_K_XL",
-    "llama.cpp/gemma-4-31B-it-UD-Q4_K_XL",
-    "llama.cpp/gemma-4-E4B-it-UD-Q4_K_XL",
     "llama.cpp/Qwen3.6-35B-A3B-UD-Q4_K_XL",
-    "llama.cpp/gemma-4-26B-A4B-it-UD-Q4_K_XL",
-    "github-copilot/gpt-5.4-mini"
+    "github-copilot/gpt-5.4-mini",
+    "llama.cpp/gemma-4-E4B-it-qat-GGUF-gemma-4-E4B-it-qat-UD-Q2_K_XL",
+    "llama.cpp/gemma-4-12B-it-qat-GGUF-gemma-4-12B-it-qat-UD-Q4_K_XL",
+    "llama.cpp/gemma-4-26B-A4B-it-qat-GGUF-gemma-4-26B-A4B-it-qat-UD-Q4_K_XL",
+    "llama.cpp/gemma-4-31B-it-qat-GGUF-gemma-4-31B-it-qat-UD-Q4_K_XL"
   ],
   "extensions": [
     "extensions/permission-gate.ts",

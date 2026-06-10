@@ -44,14 +44,13 @@
           }
         },
         {
-          "id": "gemma-4-31B-it-UD-Q4_K_XL",
-          "name": "Gemma 4 31B (local)",
+          "id": "gemma-4-12B-it-qat-GGUF-gemma-4-12B-it-qat-UD-Q4_K_XL",
+          "name": "gemma 4 12B it qat GGUF gemma 4 12B it qat (local)",
           "reasoning": true,
           "input": [
-            "text",
-            "image"
+            "text"
           ],
-          "contextWindow": 196608,
+          "contextWindow": 32768,
           "maxTokens": 8192,
           "cost": {
             "input": 0,
@@ -61,14 +60,13 @@
           }
         },
         {
-          "id": "gemma-4-E4B-it-UD-Q4_K_XL",
-          "name": "Gemma 4 E4B (local)",
+          "id": "gemma-4-26B-A4B-it-qat-GGUF-gemma-4-26B-A4B-it-qat-UD-Q4_K_XL",
+          "name": "gemma 4 26B A4B it qat GGUF gemma 4 26B A4B it qat (local)",
           "reasoning": true,
           "input": [
-            "text",
-            "image"
+            "text"
           ],
-          "contextWindow": 196608,
+          "contextWindow": 32768,
           "maxTokens": 8192,
           "cost": {
             "input": 0,
@@ -78,14 +76,29 @@
           }
         },
         {
-          "id": "gemma-4-26B-A4B-it-UD-Q4_K_XL",
-          "name": "Gemma 4 26B A4B it (local)",
+          "id": "gemma-4-31B-it-qat-GGUF-gemma-4-31B-it-qat-UD-Q4_K_XL",
+          "name": "gemma 4 31B it qat GGUF gemma 4 31B it qat (local)",
           "reasoning": true,
           "input": [
-            "text",
-            "image"
+            "text"
           ],
-          "contextWindow": 196608,
+          "contextWindow": 32768,
+          "maxTokens": 8192,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        },
+        {
+          "id": "gemma-4-E4B-it-qat-GGUF-gemma-4-E4B-it-qat-UD-Q2_K_XL",
+          "name": "gemma 4 E4B it qat GGUF gemma 4 E4B it qat UD Q2_K_XL (local)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 32768,
           "maxTokens": 8192,
           "cost": {
             "input": 0,
